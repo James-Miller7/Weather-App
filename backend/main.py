@@ -6,8 +6,8 @@ from datetime import datetime, timezone, date
 from timezonefinder import TimezoneFinder
 import pytz
 from collections import defaultdict, Counter
-from typing import List
-
+from redis_client import redis
+import json
 
 
 # Load the .env file
@@ -29,10 +29,15 @@ async def get_weather(
   # Construct query based on what was inputted
   query = city
   if state:
-    query += f",{state}"
-  if country:
+    query += f",{state},US"
+  elif country:
     query += f",{country}"
 
+  cache_key = f"weather:{query.lower()}"
+
+  cache = await redis.get(cache_key)
+  if cache:
+    return json.loads(cache)
   # URL for getting call to get longitude and latitude
   geo_url = f"{BASE_URL}/geo/1.0/direct?q={query}&limit=1&appid={OPENWEATHER_KEY}"
 
@@ -120,7 +125,7 @@ async def get_weather(
     })
 
   # Return all information including current weather and the forecast for the day and next few days
-  return {
+  full_response = {
     "location": {
       "name": location["name"],
       "lat": lat,
@@ -136,6 +141,9 @@ async def get_weather(
     "daily_forecast": summary,
     "todays_forecast": todays_data
   }
+
+  await redis.set(cache_key,json.dumps(full_response),600)
+  return full_response
 
 
 
