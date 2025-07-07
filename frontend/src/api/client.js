@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const BASE_API = "http://localhost:8000"
+const API_BASE = "http://localhost:8000"
 
 export const fetchWeather = async (city, state, country) => {
-  params = new URLSearchParams({ city });
+  const params = new URLSearchParams({ city });
 
   if (state) {
     params.append("state", state);
@@ -17,4 +17,3 @@ export const fetchWeather = async (city, state, country) => {
   return response.data
 };
 
-export default api;
