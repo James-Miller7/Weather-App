@@ -8,6 +8,7 @@ import pytz
 from collections import defaultdict, Counter
 from redis_client import redis
 import json
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # Load the .env file
@@ -19,6 +20,14 @@ app = FastAPI()
 BASE_URL = "http://api.openweathermap.org"
 OPENWEATHER_KEY = os.getenv("OPENWEATHER_KEY")
 
+# Set up middleware
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=["http://localhost:5173"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
+)
 # Endpoint that will take in city and return current weather along with forecast
 @app.get("/weather")
 async def get_weather(
